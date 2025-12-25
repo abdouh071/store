@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order | Clothing Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="nav-search.css">
+  <link rel="stylesheet" href="mobile-store-style.css">
+  <script src="translations.js"></script>
+  <style>
+    .track-container {
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 0 20px;
+      min-height: 60vh;
+    }
+
+    .track-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .track-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .track-header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: #111;
+    }
+
+    .track-header p {
+      color: #666;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: #111;
+      outline: none;
+    }
+
+    .btn-track {
+      width: 100%;
+      padding: 14px;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-track:hover {
+      background: #333;
+    }
+
+    .track-result {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
+      display: none;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-declined { background: #f8d7da; color: #721c24; }
+
+    .order-items {
+      margin-top: 20px;
+    }
+
+    .order-item {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .order-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .item-details h4 {
+      margin: 0 0 5px 0;
+      font-size: 1rem;
+    }
+
+    .item-details p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Stepper Styles */
+    .stepper-wrapper {
+      margin-top: 40px;
+      margin-bottom: 40px;
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .stepper-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: #eee;
+      z-index: 0;
+    }
+
+    .stepper-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      z-index: 1;
+    }
+
+    .step-counter {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #eee;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #ccc;
+      transition: all 0.3s;
+    }
+
+    .step-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #999;
+      text-align: center;
+    }
+
+    /* Active State */
+    .stepper-item.active .step-counter {
+      border-color: #111;
+      background: #111;
+      color: #fff;
+    }
+
+    .stepper-item.active .step-name {
+      color: #111;
+    }
+
+    /* Completed State (previous steps) */
+    .stepper-item.completed .step-counter {
+      border-color: #111;
+      background: #111;
+      color: #fff;
+    }
+    
+    .stepper-item.completed::after {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      width: 100%;
+      height: 4px;
+      background: #111;
+      z-index: -1;
+    }
+    
+    /* Last item shouldn't have a line after it */
+    .stepper-item:last-child::after {
+      display: none;
+    }
+
+    .error-msg {
+      color: #dc3545;
+      text-align: center;
+      margin-top: 15px;
+      display: none;
+    }
+
+    /* Mobile Adjustments for Stepper */
+    @media (max-width: 480px) {
+      .track-card {
+        padding: 24px 16px;
+      }
+      .step-counter {
+        width: 36px;
+        height: 36px;
+        border-width: 3px;
+        font-size: 0.8rem;
+      }
+      .step-counter svg {
+        width: 16px;
+        height: 16px;
+      }
+      .step-name {
+        font-size: 0.7rem;
+      }
+      .stepper-wrapper::before,
+      .stepper-item.completed::after {
+        top: 18px;
+        height: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <button class="menu-toggle" id="menuToggle">☰</button>
+    <a href="/" class="logo">Clothing Store</a>
+    
+    <!-- Search Bar -->
+    <div class="nav-search-container">
+      <input type="text" class="nav-search-input" placeholder="Search for products..." id="navSearchInput" data-i18n-placeholder="search_placeholder">
+      <div class="nav-search-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+    </div>
+
+    <nav class="nav-links" id="navLinks">
+      <div class="sidebar-header">
+        <span class="sidebar-logo">Clothing Store</span>
+        <button class="close-menu" id="closeMenu">×</button>
+      </div>
+      <a href="index.html" data-i18n="home">Home</a>
+      <a href="store.html" data-i18n="shop">Products</a>
+      <a href="contact.html" data-i18n="contact">Contact</a>
+      
+      <!-- Language Switcher -->
+      <div class="language-switcher" style="display: flex; align-items: center; gap: 8px; margin: 0 10px;">
+        <button id="langEn" class="lang-btn active" onclick="switchLanguage('en')">EN</button>
+        <span style="color: var(--secondary-color); opacity: 0.5;">|</span>
+        <button id="langAr" class="lang-btn" onclick="switchLanguage('ar')">AR</button>
+      </div>
+
+      <a href="wishlist.html" class="wishlist-icon" title="Wishlist">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <span class="wishlist-badge" style="display: none;">0</span>
+      </a>
+      <span class="theme-toggle" id="themeToggle">
+        <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </span>
+      <span class="cart-icon" id="cartIcon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+      </span>
+    </nav>
+  </header>
+  
+  <!-- Mobile Search Bar -->
+  <div class="mobile-search-bar">
+    <div style="position: relative;">
+      <input type="text" class="mobile-search-input" placeholder="Search for products..." id="mobileSearchInput" data-i18n-placeholder="search_placeholder">
+      <div style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #888; pointer-events: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+      <div class="search-dropdown" id="mobileSearchDropdown"></div>
+    </div>
+  </div>
+
+  <main class="track-container">
+    <div class="track-card">
+      <div class="track-header">
+        <h1 data-i18n="track_your_order">Track Your Order</h1>
+        <p data-i18n="track_desc_short">Enter your Order ID and Phone Number to check status.</p>
+      </div>
+
+      <form id="trackForm" onsubmit="trackOrder(event)">
+        <div class="form-group">
+          <label for="orderId" data-i18n="order_id_full">Order ID</label>
+          <input type="text" id="orderId" placeholder="e.g. 64f8a..." required data-i18n-placeholder="order_id_placeholder_short">
+        </div>
+        <div class="form-group">
+          <label for="phone" data-i18n="phone_number">Phone Number</label>
+          <input type="tel" id="phone" placeholder="e.g. 0550 12 34 56" required data-i18n-placeholder="phone_placeholder">
+        </div>
+        <button type="submit" class="btn-track" id="trackBtn" data-i18n="track_order">Track Order</button>
+        <p class="error-msg" id="trackError"></p>
+      </form>
+
+      <div class="track-result" id="trackResult">
+        <div style="text-align: center;">
+          <span class="status-badge" id="orderStatus" data-i18n="pending">Pending</span>
+          <h3 id="orderTotal" data-i18n="total_placeholder">Total: $0.00</h3>
+          <p style="color: #888; font-size: 0.9rem;" id="orderDate" data-i18n="ordered_on_placeholder">Ordered on: -</p>
+        </div>
+
+        <!-- Visual Stepper -->
+        <div class="stepper-wrapper" id="stepper">
+          <div class="stepper-item" id="step-placed">
+            <div class="step-counter">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div class="step-name" data-i18n="order_placed">Order Placed</div>
+          </div>
+          <div class="stepper-item" id="step-confirmed">
+            <div class="step-counter">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="step-name" data-i18n="confirmed">Confirmed</div>
+          </div>
+          <div class="stepper-item" id="step-shipped">
+            <div class="step-counter">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            </div>
+            <div class="step-name" data-i18n="shipped">Shipped</div>
+          </div>
+          <div class="stepper-item" id="step-delivered">
+            <div class="step-counter">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            </div>
+            <div class="step-name" data-i18n="delivered">Delivered</div>
+          </div>
+        </div>
+
+        <div class="order-items" id="orderItems">
+          <!-- Items injected here -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation (Mobile Only) -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item">
+      <span class="bottom-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+      <span data-i18n="home">Home</span>
+    </a>
+    <a href="store.html" class="bottom-nav-item">
+      <span class="bottom-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
+      <span data-i18n="products">Products</span>
+    </a>
+    <a href="#" class="bottom-nav-item" onclick="event.preventDefault(); toggleCart();">
+      <span class="bottom-nav-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span class="cart-badge" id="bottomCartBadge" style="display: none;">0</span>
+      </span>
+      <span data-i18n="cart">Cart</span>
+    </a>
+    <a href="history.html" class="bottom-nav-item">
+      <span class="bottom-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></span>
+      <span data-i18n="my_history">History</span>
+    </a>
+  </nav>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Clothing Store</h3>
+        <p>Your one-stop destination for fashion.</p>
+      </div>
+      <div class="footer-section">
+        <h3 data-i18n="quick_links">Quick Links</h3>
+        <ul class="footer-links">
+          <li><a href="index.html" data-i18n="home">Home</a></li>
+          <li><a href="store.html" data-i18n="products">Products</a></li>
+          <li><a href="track-order.html" data-i18n="track_order">Track Order</a></li>
+          <li><a href="contact.html" data-i18n="contact">Contact</a></li>
+          <li><a href="history.html" data-i18n="my_history">My History</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Clothing Store. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Cart Overlay -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+
+  <!-- Cart Sidebar -->
+  <div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h2>Shopping Cart</h2>
+      <button class="cart-close" id="cartClose">×</button>
+    </div>
+    <div class="cart-items" id="cartItemsContainer"></div>
+    <div class="cart-footer" id="cartFooter">
+      <div class="cart-total">
+        <span>Total:</span>
+        <span id="cartTotalAmount">$0</span>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
+    </div>
+
+    <!-- Checkout Form (hidden by default) -->
+    <div class="checkout-form" id="checkoutForm" style="display: none;">
+      <div class="checkout-header">
+        <button class="back-to-cart" id="backToCart">← Back to Cart</button>
+        <h3>Checkout</h3>
+      </div>
+      
+      <div class="checkout-content">
+        <form id="orderForm">
+          <!-- Visual Order Summary -->
+          <div class="order-summary-container" id="checkoutItemsList">
+             <!-- Items injected via JS -->
+          </div>
+
+          <div class="form-group">
+            <label for="checkoutName">Full Name *</label>
+            <input type="text" id="checkoutName" name="name" placeholder="John Doe" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="checkoutPhone">Phone Number *</label>
+            <input type="tel" id="checkoutPhone" name="phone" placeholder="0550 12 34 56" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="checkoutWilaya">Wilaya *</label>
+            <select id="checkoutWilaya" name="wilaya" class="searchable" required>
+              <option value="">Select Wilaya</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="checkoutCommune">Commune *</label>
+            <select id="checkoutCommune" name="commune" class="searchable" required disabled>
+              <option value="">Select Commune</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="checkoutAddress">Address *</label>
+            <textarea id="checkoutAddress" name="address" placeholder="Street, Building, Apartment..." rows="3" required></textarea>
+          </div>
+
+
+          
+          <div class="checkout-totals">
+             <div class="checkout-row">
+               <span>Subtotal:</span>
+               <span id="checkoutSubtotal">$0.00</span>
+             </div>
+             <div class="checkout-row total-row">
+               <span>Total:</span>
+               <span id="checkoutFinalTotal">$0.00</span>
+             </div>
+          </div>
+          
+          <button type="submit" class="checkout-btn">Place Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js?v=14"></script>
+  <script>
+    async function trackOrder(e) {
+      e.preventDefault();
+      
+      const orderId = document.getElementById('orderId').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const btn = document.getElementById('trackBtn');
+      const errorMsg = document.getElementById('trackError');
+      const resultDiv = document.getElementById('trackResult');
+      
+      // Reset UI
+      errorMsg.style.display = 'none';
+      resultDiv.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Tracking...';
+      
+      try {
+        const res = await fetch('/api/orders/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, phone })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to track order');
+        }
+        
+        // Render Result
+        const statusBadge = document.getElementById('orderStatus');
+        statusBadge.textContent = data.status;
+        statusBadge.className = `status-badge status-${data.status.toLowerCase()}`;
+        
+        document.getElementById('orderTotal').textContent = `Total: $${data.totalPrice.toFixed(2)}`;
+        
+        const orderDate = new Date(data.createdAt);
+        document.getElementById('orderDate').textContent = `Ordered on: ${orderDate.toLocaleDateString()}`;
+        
+        // Calculate Estimated Delivery (e.g., +5 days)
+        const deliveryDate = new Date(orderDate);
+        deliveryDate.setDate(orderDate.getDate() + 5);
+        
+        // Add or update estimated delivery element
+        let estEl = document.getElementById('estimatedDelivery');
+        if (!estEl) {
+          estEl = document.createElement('p');
+          estEl.id = 'estimatedDelivery';
+          estEl.style.color = '#111';
+          estEl.style.fontWeight = '600';
+          estEl.style.marginTop = '5px';
+          document.getElementById('orderDate').after(estEl);
+        }
+        estEl.textContent = `Expected by: ${deliveryDate.toLocaleDateString()}`;
+        
+        // Update Stepper
+        const steps = ['placed', 'confirmed', 'shipped', 'delivered'];
+        // Map API status to step index
+        let currentStepIndex = 0;
+        
+        // "Pending" maps to "placed" (index 0)
+        if (data.status === 'Confirmed') currentStepIndex = 1;
+        else if (data.status === 'Shipped') currentStepIndex = 2;
+        else if (data.status === 'Delivered') currentStepIndex = 3;
+        else if (data.status === 'Declined') currentStepIndex = -1; // Handle declined separately if needed
+
+        // Reset all steps
+        document.querySelectorAll('.stepper-item').forEach(item => {
+          item.classList.remove('active', 'completed');
+        });
+
+        if (currentStepIndex >= 0) {
+          // Mark completed steps
+          for (let i = 0; i < currentStepIndex; i++) {
+            document.getElementById(`step-${steps[i]}`).classList.add('completed');
+          }
+          // Mark active step
+          document.getElementById(`step-${steps[currentStepIndex]}`).classList.add('active');
+        } else if (data.status === 'Declined') {
+             // Optional: Show declined state visually?
+             // For now, just leave stepper empty or show first step as error
+             document.getElementById('step-placed').classList.add('active');
+             // Maybe change color via CSS if we added a .declined class
+        }
+
+        const itemsContainer = document.getElementById('orderItems');
+        itemsContainer.innerHTML = data.items.map(item => `
+          <div class="order-item">
+            <img src="${item.image || 'placeholder.jpg'}" class="item-img" alt="${item.name}">
+            <div class="item-details">
+              <h4>${item.name}</h4>
+              <p>Qty: ${item.qty} x $${item.price}</p>
+            </div>
+          </div>
+        `).join('');
+        
+        resultDiv.style.display = 'block';
+        
+        // ⭐ Smooth scroll to results
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Track Order';
+      }
+    }
+
+    // ⭐ Automated Tracking from History Page
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderIdParam = urlParams.get('orderId');
+      const phoneParam = urlParams.get('phone');
+      
+      if (orderIdParam && phoneParam) {
+        document.getElementById('orderId').value = orderIdParam;
+        document.getElementById('phone').value = phoneParam;
+        // Trigger tracking
+        trackOrder(new Event('submit'));
+      }
+    });
+  </script>
+</body>
+</html>
