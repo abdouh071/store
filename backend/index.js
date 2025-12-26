@@ -49,6 +49,18 @@ app.use("/api/settings", require("./routes/settings"));
 
 const DZ_BASE = "https://algeria-apis.vercel.app/api/v1";
 
+// Health Check for MongoDB
+app.get("/api/health", async (req, res) => {
+  const status = mongoose.connection.readyState;
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  const labels = ["disconnected", "connected", "connecting", "disconnecting"];
+  res.json({
+    mongodb: labels[status] || "unknown",
+    env_mongo_uri: process.env.MONGO_URI ? "Defined" : "MISSING",
+    vercel_env: process.env.VERCEL ? "Yes" : "No"
+  });
+});
+
 // Get all wilayas from local JSON
 app.get("/api/wilayas", (req, res) => {
   try {
