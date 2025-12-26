@@ -56,12 +56,26 @@ const DZ_BASE = "https://algeria-apis.vercel.app/api/v1";
 // Health Check for MongoDB
 app.get("/api/health", async (req, res) => {
   const status = mongoose.connection.readyState;
-  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
   const labels = ["disconnected", "connected", "connecting", "disconnecting"];
+  
+  let dbError = null;
+  if (status !== 1) {
+    try {
+      // Try to re-trigger a connection if it failed
+      if (process.env.MONGO_URI) {
+        await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+      }
+    } catch (e) {
+      dbError = e.message;
+    }
+  }
+
   res.json({
     mongodb: labels[status] || "unknown",
-    env_mongo_uri: process.env.MONGO_URI ? "Defined" : "MISSING",
-    vercel_env: process.env.VERCEL ? "Yes" : "No"
+    mongodb_error: dbError,
+    env_mongo_uri: process.env.MONGO_URI ? "Defined (Starts with: " + process.env.MONGO_URI.substring(0, 10) + "...)" : "MISSING",
+    vercel_env: process.env.VERCEL ? "Yes" : "No",
+    timestamp: new Date().toISOString()
   });
 });
 
